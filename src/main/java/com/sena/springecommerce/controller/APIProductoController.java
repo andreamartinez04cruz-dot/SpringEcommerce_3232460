@@ -1,10 +1,24 @@
 package com.sena.springecommerce.controller;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sena.springecommerce.model.Producto;
+import com.sena.springecommerce.model.Usuario;
 import com.sena.springecommerce.service.IProductoServece;
+import com.sena.springecommerce.service.IUsuarioService;
 
 @RestController
 @RequestMapping("/apiproductos")
@@ -12,4 +26,71 @@ public class APIProductoController {
 
 	@Autowired
 	private IProductoServece productoservice;
+
+	@Autowired
+	private IUsuarioService usuarioService;
+
+	// endpoint GET para obtener todos los productos
+	@GetMapping("/list")
+	public List<Producto> getAllProductos() {
+		return productoservice.findAll();
+
+	}
+
+	// Endpoint GET para obtener un producto por ID
+	@GetMapping("/product/{id}")
+	public ResponseEntity<Producto> getProductById(@PathVariable Integer id) {
+		Optional<Producto> producto = productoservice.get(id);
+		return producto.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+	}
+
+	// Endpoint POST para crear un nuevo producto
+	@PostMapping("/create")
+	public ResponseEntity<Producto> createProduct(@RequestBody Producto producto) {
+
+		Usuario u = usuarioService.findById(1).get();
+		producto.setUsuario(u);
+		if (producto.getImagen() == null) {
+			producto.setImagen("default.jpg");
+
+		}
+		Producto savedProducto = productoservice.save(producto);
+		return ResponseEntity.status(HttpStatus.CREATED).body(savedProducto);
+	}
+
+	// Endpoint PUT para actualizar un producto
+	@PutMapping("/update{id}")
+	public ResponseEntity<Producto> updateProducto(@PathVariable Integer id, @RequestBody Producto productoDetails) {
+		Optional<Producto> producto = productoservice.get(id);
+		if (!producto.isEmpty()) {
+			return ResponseEntity.notFound().build();
+		}
+		Producto existingProduct = producto.get();
+		existingProduct.setNombre(productoDetails.getNombre());
+		existingProduct.setDescripcion(productoDetails.getDescripcion());
+		existingProduct.setPrecio(productoDetails.getPrecio());
+		existingProduct.setCantidad(productoDetails.getCantidad());
+		// Mantener la imagen existente amenos que se envie una nueva
+		if (productoDetails.getImagen() != null) {
+			existingProduct.setImagen(productoDetails.getImagen());
+		}
+		productoservice.update(existingProduct);
+		return ResponseEntity.ok(existingProduct);
+	}
+
+	// Endpoint DELETE para eliminar un producto
+	@DeleteMapping("/delet/{id}")
+	public ResponseEntity<?> deleteProduct(@PathVariable Integer id) {
+		Optional<Producto> producto = productoservice.get(id);
+		if (!producto.isEmpty()) {
+			return ResponseEntity.notFound().build();
+		}
+		Producto p = producto.get();
+		if (!p.getImagen().equals("default.jpg")) {
+			//
+		}
+		productoservice.delete(id);
+		return ResponseEntity.ok().build();
+
+	}
 }
