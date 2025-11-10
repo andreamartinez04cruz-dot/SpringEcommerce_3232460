@@ -45,33 +45,30 @@ public class OrdenServiceImplement implements IOredenService {
 	public String generarNumeroOrden() {
 		// TODO Auto-generated method stub
 		int numero = 0;
-		String numeroConcatenado ="";
+		String numeroConcatenado = "";
 		List<Orden> ordenes = findAll();
 		List<Integer> numeros = new ArrayList<>();
-		//funciones de java 8
-		//variable anonima
-		ordenes.stream().forEach(o-> numeros.add(Integer.parseInt(o.getNumero())));
-		//validacion
+		// funciones de java 8
+		// variable anonima
+		ordenes.stream().forEach(o -> numeros.add(Integer.parseInt(o.getNumero())));
+		// validacion
 		if (ordenes.isEmpty()) {
 			numero = 1;
-			
+
 		} else {
 			numero = numeros.stream().max(Integer::compare).get();
 			numero++;
 		}
-		//numero de ordenes
+		// numero de ordenes
 		if (numero < 10) {
-			numeroConcatenado = "000000000000"+ String.valueOf(numero); 
+			numeroConcatenado = "000000000000" + String.valueOf(numero);
 		} else if (numero < 100) {
-			numeroConcatenado = "00000000000"+ String.valueOf(numero); 
+			numeroConcatenado = "00000000000" + String.valueOf(numero);
 
 		} else if (numero < 1000) {
-			numeroConcatenado = "0000000000"+ String.valueOf(numero); 
-	
+			numeroConcatenado = "0000000000" + String.valueOf(numero);
+		}
 		return numeroConcatenado;
 	}
-	
-
-
 
 }
